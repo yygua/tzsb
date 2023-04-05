@@ -1,0 +1,104 @@
+﻿(function ($) {
+    $.fn.ToJsonString = function () {
+        var postData = '';
+        $(this).find(":input[datatype!='listData']").each(function () {
+            if (postData != undefined && postData != "") {
+                postData += ',"' + $(this).attr("name") + '":"' + $(this).val() + '"';
+            }
+            else
+                postData += '"' + $(this).attr("name") + '":"' + $(this).val() + '"';
+        });
+        var list = '';
+        var data = '';
+        $(".listData").each(function () {
+            list = '';
+            $(this).find("tr[type='item']").each(function () {
+                data = '';
+                $(this).find(":input").each(function () {
+                    if ($(this).val() != undefined && $(this).val() != '') {
+                        if (data != undefined && data != '')
+                            data += ',"' + $(this).attr("keyname") + '":"' + $(this).val() + '"';
+                        else
+                            data += '"' + $(this).attr("keyname") + '":"' + $(this).val() + '"';
+                    }
+                });
+                if (data != undefined && data != '') {
+                    if (list != undefined && list != '')
+                        list += ',{' + data + '}';
+                    else
+                        list += '{' + data + '}';
+                }
+            });
+
+            if (postData != undefined && postData != '')
+                postData += ',"' + $(this).attr("id") + '":[' + list + ']';
+            else
+                postData += '"' + $(this).attr("id") + '":[' + list + ']';
+        });
+
+        return "{" + postData + "}";
+    };
+    $.fn.BindData = function (data, ignore) {
+        var typeList = ['checkbox', 'radio', 'submit', 'button', 'reset'];
+        $(this).find(":input").each(function () {
+            if (ignore == undefined || (ignore != undefined && jQuery.inArray($(this).attr("name"), ignore) == -1)) {
+                if (jQuery.inArray($(this).attr("type"), typeList) == -1) {
+                    try {
+                        $(this).val(eval('data.' + $(this).attr('name')) == null ? "" : eval('data.' + $(this).attr('name')));
+                    } catch (e) { }
+                }
+                if ($(this).attr("type") == 'checkbox') {
+                    try {
+                        var checkboxVal = eval('data.' + $(this).attr('name'));
+                        if (jQuery.inArray($(this).val(), checkboxVal) > -1) {
+                            $(this).attr("checked", true);
+
+                        }
+                        else
+                            $(this).attr("checked", false);
+                    }
+                    catch (e) { }
+                }
+            }
+        });
+    };
+    $.fn.GenPostData = function () {
+        var postData = {};
+        $(this).find("input[type!='button'][type!='reset'][datatype!='listData'],textarea,select").each(function () {
+            //alert($(this).attr("name"));
+            eval('(postData.' + $(this).attr("name") + '= $(this).val())');
+        });
+
+        var list = '';
+        var data = '';
+        $(".listData").each(function () {
+            list = '';
+            $(this).find("tr[type='item']").each(function () {
+                data = '';
+                $(this).find(":input").each(function () {
+                    if ($(this).val() != undefined && $(this).val() != '') {
+                        if (data != undefined && data != '')
+                            data += ',"' + $(this).attr("keyname") + '":"' + $(this).val() + '"';
+                        else
+                            data += '"' + $(this).attr("keyname") + '":"' + $(this).val() + '"';
+                    }
+                });
+                if (data != undefined && data != '') {
+                    if (list != undefined && list != '')
+                        list += ',{' + data + '}';
+                    else
+                        list += '{' + data + '}';
+                }
+            });
+            list = '[' + list + ']';
+            eval('(postData.' + $(this).attr("id") + '= list)');
+            //            if (postData != undefined && postData != '')
+
+            //                postData += ',"' + $(this).attr("id") + '":[' + list + ']';
+            //            else
+            //                postData += '"' + $(this).attr("id") + '":[' + list + ']';
+        });
+
+        return postData;
+    };
+})(jQuery);

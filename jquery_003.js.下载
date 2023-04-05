@@ -1,0 +1,88 @@
+﻿// 字符验证       
+jQuery.validator.addMethod("stringCheck", function(value, element) {       
+     return this.optional(element) || /^[\u0391-\uFFE5\w]+$/.test(value);       
+ }, "只能包括中文字、英文字母、数字和下划线");   
+   
+ // 中文字两个字节       
+jQuery.validator.addMethod("byteRangeLength", function(value, element, param) {       
+    var length = value.length;       
+     for(var i = 0; i < value.length; i++){       
+         if(value.charCodeAt(i) > 127){       
+         length++;       
+         }       
+     }       
+     return this.optional(element) || ( length >= param[0] && length <= param[1] );       
+}, "请确保输入的值在3-15个字节之间(一个中文字算2个字节)");
+
+// // 身份证号码验证，此方法有 BUG，调了一个不存在的isIdCardNo函数
+jQuery.validator.addMethod("isIdCardNo", function (value, element) {
+        return this.optional(element) || isIdCardNo(value.replace(/[\s\t]/g,''));
+}, "请正确输入身份证号码");
+//      
+ // 手机号码验证       
+jQuery.validator.addMethod("isMobile", function(value, element) {       
+     var length = value.length;
+     var mobile = /^(((13[0-9]{1})|(15[0-9]{1})|(18[0-9]{1}))+\d{8})$/; 
+     return this.optional(element) || (length == 11 && mobile.test(value));       
+}, "请正确填写您的手机号码");       
+      
+ // 电话号码验证       
+jQuery.validator.addMethod("isTel", function(value, element) {       
+     var tel = /^\d{3,4}-?\d{7,9}$/;    //电话号码格式010-12345678   
+     return this.optional(element) || (tel.test(value));       
+}, "请正确填写您的电话号码");   
+      
+ // 邮政编码验证       
+jQuery.validator.addMethod("isZipCode", function(value, element) {       
+     var tel = /^[0-9]{6}$/;       
+     return this.optional(element) || (tel.test(value));
+ }, "请正确填写您的邮政编码");
+ //组织机构代码验证
+ jQuery.validator.addMethod("isValidEntpCode", function (value, element) {
+     //78305975-3
+     var ws = [3, 7, 9, 10, 5, 8, 4, 2];
+     var str = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+     var reg = /^([0-9A-Z]){8}-[0-9|X]$/;
+     if (!reg.test(value)) {
+         return false;
+     }
+     var sum = 0;
+     for (var i = 0; i < 8; i++) {
+         sum += str.indexOf(value.charAt(i)) * ws[i];
+     }
+     var C9 = 11 - (sum % 11);
+     var sc9 = C9;
+     if (C9 == 11) {
+         sc9 = '0';
+     } else if (C9 == 10) {
+         sc9 = 'X'
+     } else {
+         sc9 = C9;
+     }
+     return sc9 == value.charAt(9);
+ }, "组织机构代码格式不正确");
+
+ //身份证验证
+ function isIdCardNo(str) {
+     if (str.length != 15 && str.length != 18) return false;
+     var arealist = ["11", "12", "13", "14", "15", "21", "22", "23", "31", "32", "33", "34", "35", "36", "37", "41", "42", "43", "44", "45", "46", "50", "51", "52", "53", "54", "61", "62", "63", "64", "65", "90", "91", "92"];
+     var area = str.substr(0, 2);
+     if ($.inArray(area, arealist) < 0) return false;
+     if (str.length == 15) {
+         if (isNaN(str)) return false;
+         var birthdayM = str.substr(8, 2);
+         var birthdayD = str.substr(10, 2);
+         if (parseInt(birthdayM, 10) < 1 || parseInt(birthdayM, 10) > 12) return false;
+         if (parseInt(birthdayD, 10) < 1 || parseInt(birthdayD, 10) > 31) return false;
+     }
+     else {
+         if (isNaN(str.substr(0, 17))) return false;
+         var birthdayY = str.substr(6, 4);
+         var birthdayM = str.substr(10, 2);
+         var birthdayD = str.substr(12, 2);
+         if (parseInt(birthdayY) < 1900 || parseInt(birthdayY) > parseInt(new Date().getFullYear())) return false;
+         if (parseInt(birthdayM, 10) < 1 || parseInt(birthdayM, 10) > 12) return false;
+         if (parseInt(birthdayD, 10) < 1 || parseInt(birthdayD, 10) > 31) return false;
+     }
+     return true;
+ };
